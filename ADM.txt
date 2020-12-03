@@ -1,0 +1,204 @@
+
+module(genererSuiteAleatoire; x0, a, c, m;)
+
+---* main
+x0 = 
+a = 
+c = 
+m = 
+valeurTestSaut = 
+if(NOT HullDobbelPeriode(x0, a, c, m))
+  sortir "paramètres incorrects"
+  return
+endif
+suiteAleatoire = genererSuiteAleatoire(x0, a, c, m)
+if(testDesSauts(suiteAleatoire, valeurTestSaut))
+  sortir "test des sauts failed"
+  return
+endif
+------
+
+---* genererSuiteAleatoire
+suiteAleatoire = [x0]
+Xn+1 = (a * x0 + c) % m
+
+do while (Xn+1 != x0)
+// la méthode push ajoute l'élément en fin de tableau
+suiteAleatoire.push(Xn+1)
+Xn = Xn+1
+Xn+1 = (a * Xn + c) % m
+enddo
+return suiteAleatoire
+------
+
+// renvoie true si le test confirme que la suite est ok
+---* testDesSauts (suiteAleatoire, valeurTestSaut )
+niveauIncertitude = 0.05
+// l'attribut "length" donne le nombre d'éléments dans le tableau
+n = suiteAleatoire.length
+
+// initialisation du tableau du test des sauts
+
+// saut : Xi
+// sautGroupé : cas ou on groupe Xi entre eux (palier du haut) (facultatif)
+// pi: probabilité d'avoir un saut de taille "saut"
+// ri: nombre de répétitions observées
+testDesSauts: []
+i = 0
+do while (i < n - 2)
+  testDesSauts.push({
+    saut = i
+    pi = 0.9^i * 0.1
+    ri = null
+    npi = n * pi
+  })
+ i++
+enddo
+
+// parcours de la suite aléatoire et remplissage des ri
+indexVal = 0
+do while(suiteAleatoire[indexVal] != valeurTestSaut && indexVal < n)
+  indexVal++
+enddo
+i = indexVal + 1
+saut = 0
+do while (i < n)
+  if(suiteAleatoire[i] != valeurTestSaut)
+    saut++
+  else
+    testDesSauts[saut].ri++
+    saut = 0
+  endif
+ i++
+enddo
+
+// parcoure les objets du tableau "testDesSauts" un par un et fait les regroupements
+i = n - 1
+do while (i >= 0)
+if(testDesSauts[i].npi < 5)
+  npiTemp = testDesSauts[i].npi
+  mergeStartId = i
+  do while (i >= 0 AND npiTemp < 5)
+   i--
+   npiTemp+= testDesSauts[i].npi
+ enddo
+ mergeEndId = i
+ module(Merge;mergeStartId, mergeEndId, testdesSauts;testDesSauts)
+endif
+i--
+enddo
+
+// calcul du khi carré observable
+khiCarré = 0;
+i = 0
+do while (i < testDesSauts.length)
+  tds = testDesSauts[i]
+  khiCarré += (tds.ri - tds.npi)^2 / (tds.npi)
+enddo
+// zone de non rejet
+degréLiberté = testDesSauts.length - 1
+proba = 1 - niveauIncertitude
+// en python il existe une librairie qui connait la table khi carré
+valeurMax = lire table khi carré en utilisant les paramètres calculés ci-dessus
+// rejet ou non de la suite
+return khiCarré >= 0 AND khiCarré <= valeurMax
+------
+
+---* Merge(mergeStartId, mergeEndId, testdesSauts)
+newSaut = "[" + mergeEndId + "-" + mergeStartId + "]"
+newRi = 0
+newPi = 0
+newNpi = 0
+i = mergeEndId
+do while (i <= mergeStartId)
+newRi += testDesSauts[i].ri
+newPi +=  testDesSauts[i].pi
+newNpi +=  testDesSauts[i].npi
+testDesSauts[i] = null
+i++
+enddo
+testDesSauts[mergeEndId].saut = newSaut
+testDesSauts[mergeEndId].ri = newRi
+testDesSauts[mergeEndId].pi = newPi
+testDesSauts[mergeEndId].npi = newNpi
+
+replaceI = mergeEndId++
+i = mergeStartId++
+do while (i < testDesSauts.length() AND testDesSauts[i] != null)
+  testDesSauts[replaceI] = testDesSauts[i]
+  i++
+  replaceI++
+enddo
+return testDesSauts
+------
+
+---* HullDobbelPeriode(x0, a, c, m)
+
+// test c et m sont premiers entre eux
+if(c < m)
+  lower = c
+  bigger = m
+else
+  lower = m
+  bigger = c
+endif
+// .ENT = partie entière du nombre
+halfOfBigger = [bigger / 2].ENT
+i = 0
+do while (i <= halfOfBigger)
+  if (c % i == 0 && m % i == 0)
+    // c et m ne sont pas premiers entre eux
+    return false
+  endif
+  i++
+enddo
+// Pour tout p, facteur premier de m, on a (a-1) multiple de p
+p = 2
+do while (p <= [m/2].ENT)
+  if(estPremier(p) && m % p == 0)
+    if (p % (a * (a - 1) != 0)
+      return false
+    endif
+  endif
+  p++
+enddo
+
+// Si m est multiple de 4, alors (a-1) est multiple de 4
+if(m % 4 == 0)
+  return a - 1 % 4 == 0
+endif
+
+return true
+------
+
+---* estPremier(nombre)
+halfOfNumber = [nombre / 2].ENT
+i = 2
+do while (i <= halfOfNumber)
+ if(nombre % i == 0)
+   return false
+ endif
+ i++
+enddo
+return true
+------
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
