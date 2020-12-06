@@ -1,0 +1,269 @@
+// variables globales :
+suiteAléatoire : suite générée via le DA partie 1
+loiDuréeService: tableau donné dans les consignes partie 2
+
+---* gestionFileAttente
+coutOptimal = BIG_FLOAT
+nbStationsOptimal = 1
+tempsSimulationMax = 600
+nbStationsOrdinairesMax = 500
+nbStationsOrdinaires = 1
+tailleMaxFileExpress = 10
+indiceSuiteAléatoire = 0
+
+// boucle pour tester avec différents nombres de stations
+do while (nbStationsOrdinaires <= nbStationsOrdinairesMax)
+  tempsSimulation = 0
+  fileExpress = []
+  fileOrdinaire = []
+  stations = []
+  nbDéclassés = 0
+  nbEjectés = 0
+  // min = minutes
+  minExpress = 0
+  minOrdinaire = 0
+  minPrioritaire = 0
+  i = 0
+  do while (i < nbStationsOrdinaires + 2)
+    stations[i] = {
+      client: null,
+      minOccupées: 0
+      minInoccupées: 0
+    }
+    i++
+  enddo
+  
+  // boucle sur le temps de simulation
+  do while (tempsSimulation <= tempsSimulationMax)
+    // générer arrivée clients
+    module(générerArrivéeClients;tempsSimulation; clients)
+    // gérer arrivées clients
+    paragraphe(GérerArrivéesClients)
+    // gestion traitements express
+    paragraphe(GererExpress)
+    // gestion traitements ordinaires
+    paragraphe(GererOrdinaire)
+    // décrémenter durée service à toutes les stations occupées
+    iStation = 0
+    do while (i < nbStationsOrdinaires + 2)
+      if(stations[iStation].client != null)
+        stations[iStation].client.duréeService--
+      endif
+    enddo
+    tempsSimulation++
+  enddo
+  // calcul du cout de la simulation et enregistrement du nombre de stations optimal
+  paragraphe(CalculCouts)
+  if(coutTotal < coutOptimal)
+    coutOptimal = coutTotal
+    nbStationsOptimal = nbStationsOrdinaires + 2
+  endif
+  nbStationsOrdinaires++
+enddo
+------
+
+---* générerArrivéeClients(tempsSimulation)
+clients = []
+nbClients = (e^-2 * 2^tempsSimulation)  / (tempsSimulation!)
+i = 0
+// création d'objets qui décrivent les clients
+do while (i < nbClients)
+  module(générerDuréeService;indiceSuiteAléatoire;duréeService)
+  if(duréeService == 1)
+    classe = "express"
+  else
+    module(déterminerSiClientPrioritaire;indiceSuiteAléatoire;estPrioritaire)
+    if(estPrioritaire)
+      classe = "prioritaire"
+    else
+      classe = "ordinaire"
+    endif
+  endif
+
+  if(suiteAleatoire[indiceSuiteAléatoire+1] != null)
+    indiceSuiteAléatoire++
+  else
+    indiceSuiteAléatoire = 0
+  endif
+  clients.push({
+    classe: classe
+    duréeService: duréeService
+  })
+enddo
+return clients
+------
+
+---* déterminerSiClientPrioritaire(indiceSuiteAléatoire)
+return suiteAléatoire[indiceSuiteAléatoire] == 1
+------
+
+---* générerDuréeService(indiceSuiteAléatoire)
+nombreAléatoire = (suiteAleatoire[indiceSuiteAléatoire] + 1) * 6
+if (nombreAléatoire <= 24)
+ return 1
+endif
+if (nombreAléatoire > 24 && nombreAléatoire <= 42)
+  return 2
+endif
+if (nombreAléatoire > 42 && nombreAléatoire <= 52)
+  return 3
+endif
+if (nombreAléatoire > 52 && nombreAléatoire <= 55)
+  return 4
+endif
+if (nombreAléatoire > 55 && nombreAléatoire <= 58)
+  return 5
+endif
+return 6
+------
+
+---* GérerArrivéesClients
+i = 0
+do while (i < clients.length)
+if (clients[i].classe == "express")
+  if (fileExpress.length < 10)
+    fileExpress.push(clients[i])
+  else
+    clients[i].classe == "ordinaire"
+    file.push(clients[i])
+    nbDéclassés++
+  endif
+endif
+if (clients[i].classe == "ordinaire")
+  file.push(clients[i])
+endif
+if (clients[i].classe == "prioritaire")
+  // trouver une station vide
+  iStation = 2
+  do while (iStation < stations.length && stations[iStation].clients != null)
+    iStation ++
+  enddo
+  // une station est libre
+  if(iStation < stations.length || stations[iStation].client == null)
+    stations[iStation].client = clients[i]
+    // toutes les stations sont occupées
+    else
+      // trouver le client avec le temps de traitement max
+      iStation = 2
+      iMaxDurée = 2
+      maxDurée = 0
+      do while (iStation < stations.length)
+        if(stations[iStation].client.duréeService < duréeMax && stations[iStation].client.classe != "prioritaire")
+          maxDurée = stations[iStation].client.duréeService
+          iMaxDurée = iStation
+        endif
+        iStation++
+      enddo
+      if(maxDurée == 0)  
+        // insérer le prioritaire en début de file si toutes les stations sont occupées par des prioritaires
+        // en python la méthode insert permet d'ajouter un élément en début de tableau
+        fileOrdinaire.insert(0, clients[iClient])
+      else
+        clientEjecté = stations[iStation].client
+        nbEjectés++
+        fileOrdinaire.insert(0, clientEjecté)
+        stations[iStation].client = clients[iClient]
+      endif
+  endif
+endif
+i++
+enddo
+------
+
+---* GererExpress
+iStation = 0
+do while (iStation < 2)
+  if(stations[iStation].client == null)
+    stations[iStation].minInoccupées++
+  else
+    if(stations[iStation].client.duréeService == 0 && fileExpress.length > 0)
+      stations[iStation].client = fileExpress[0]
+      minExpress += fileExpress[0].duréeService
+      // enlever le premier element de la file
+      fileExpress.pop(0)
+    endif
+    if(stations[iStation].client.duréeService == 0 && fileExpress.length == 0)
+      stations[iStation].client = null
+    endif
+    if(stations[iStation].client.duréeService > 0)
+      stations[iStation].minOccupées++
+    endif
+  endif
+  iStation++
+enddo
+minExpress += fileExpress.length
+------
+
+---* GererOrdinaire
+iStation = 2
+do while (iStation < stations.length)
+  if(stations[iStation].client == null)
+    stations[iStation].minInoccupées++
+  else
+    if(stations[iStation].client.duréeService == 0 && fileOrdinaire.length > 0)
+      stations[iStation].client = fileOrdinaire[0]
+      if(stations[iStation].client.classe == "ordinaire")
+        minOrdinaire += fileOrdinaire[0].duréeService
+      else
+        minPrioritaire += fileOrdinaire[0].duréeService
+      endif
+      // enlever le premier element de la file
+      fileOrdinaire.pop(0)
+    endif
+    if(stations[iStation].client.duréeService == 0 && fileOrdinaire.length == 0)
+      stations[iStation].client = null
+    endif
+    if(stations[iStation].client.duréeService > 0)
+      stations[iStation].minOccupées++
+    endif
+  endif
+  iStation++
+enddo
+iFile = 0
+do while (iFile < fileOrdinaire.length)
+if(fileOrdinaire[iFile].classe == "ordinaire")
+  minOrdinaire++
+else
+  minPrioritaire++
+endif
+enddo
+------
+
+---* CalculCouts
+coutsExpress = (minExpress / 60) * 35
+coutsOrdinaire = (minOrdinaire / 60) * 25
+coutsPrioritaire = (minPrioritaire / 60) * 45
+
+iStation = 0
+do while (iStation < stations.length)
+if(iStation == 0 || iStation == 1)
+  coutsExpress += stations[iStation].minOccupées * 32
+else
+  coutsOrdinaires += stations[iStation].minOccupées * 30
+endif
+coutsInoccupation = stations[iStation].minInoccupées * 18
+iStation++
+enddo
+
+coutTotal = coutsExpress + coutsOrdinaire + coutsPrioritaire + coutsInoccupation
+            + nbDéclassés * 15 + nbEjectés * 20
+------
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
