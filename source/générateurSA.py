@@ -1,3 +1,11 @@
+# TODO : relecture
+#       optimisation en fonctionnel
+#       khi carré
+
+# correction Mme Derwa : avancer Pas à pas dans la recu et pas tout stocker en mémoire
+# -> Prendre un paramètre indice supplémentaire
+
+
 from source.classeSaut import Saut
 import scipy.stats as sc
 
@@ -129,4 +137,4 @@ def main_generateur():
         print("Test des sauts foiré XD")
         return None
 
-    return suite_aleatoire # pas dans le DA mais utile pour après
+    return x0, a, c, m, suite_aleatoire # pas dans le DA mais utile pour après
