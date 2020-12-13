@@ -71,7 +71,7 @@ def test_des_sauts(suite_aleatoire, valeur_test_saut):
     n = len(suite_aleatoire)
     test_des_sauts = []
     for i in range(n-2):
-        new_saut = Saut(i, (0.9**i)*0.1, None, n*pi) # wtf le pi ici ?
+        new_saut = Saut(i, (0.9**i)*0.1, None, n*(0.9**i)*0.1) # wtf le pi ici ?
         test_des_sauts.append(new_saut)
     
     index_val = 0
