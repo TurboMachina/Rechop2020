@@ -41,7 +41,30 @@ def est_premier(nombre):
     return True
 
 def merge(merge_start_id, merge_end_id, test_des_sauts):
-    pass
+    new_saut = "[" + str(merge_start_id) + "-" + str(merge_end_id) + "]" # franchement, propre ça ? jsp
+    new_ri = 0
+    new_pi = 0
+    new_npi = 0
+    
+    for i in range(merge_end_id, merge_start_id+1):
+        new_pi = test_des_sauts[i].pi
+        new_ri = test_des_sauts[i].ri
+        new_npi = test_des_sauts[i].npi
+        test_des_sauts.pop(i)
+    
+    test_des_sauts[merge_end_id].saut = new_saut
+    test_des_sauts[merge_end_id].pi = new_pi
+    test_des_sauts[merge_end_id].ri = new_ri
+    test_des_sauts[merge_end_id].npi = new_npi
+
+    replaceI = merge_end_id + 1
+    i = merge_start_id + 1
+    while(i < len(test_des_sauts)): # de base y a un != de null, mais useless ici en python j'imagine
+        test_des_sauts[replaceI] = test_des_sauts[i]
+        i += 1
+        replaceI += 1
+
+        return test_des_sauts
 
 def test_des_sauts(suite_aleatoire, valeur_test_saut):
     niveau_incertitude = 0.05
@@ -72,19 +95,25 @@ def test_des_sauts(suite_aleatoire, valeur_test_saut):
             merge_end_id = i
             test_des_sauts = merge(merge_start_id, merge_end_id, test_des_sauts)
     
+    # Methode 1
     khi_carre = 0
     for i in range(len(test_des_sauts)):
         tds = test_des_sauts[i]
         khi_carre += ((tds.ri - tds.pi)**2) / (tds.npi)
     degre_de_liberte = len(test_des_sauts) - 1
     proba = 1 - niveau_incertitude
-    # TODO khi carré
-    valeur_max = sc.chi2_contingency() # go creuser la doc de scipy pour voir comment ça marche
+    valeur_max = 0 # lecture de table ici
 
     return khi_carre >= 0 and khi_carre <= valeur_max
 
-    # TODO def Merge (Simpson mdr)
-    
+    # Methode 2
+    stat, p, dof, expected = sc.chi2_contingency(test_des_sauts)
+    crit = sc.chi2.ppf(proba, dof) # go creuser la doc de scipy pour voir comment ça marche
+    if abs(stat) >= crit:
+	    return False
+    else:
+	    return True
+
 def main_generateur():
     x0 = input()
     a  = input()
