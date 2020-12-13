@@ -1,9 +1,14 @@
-from source.classesStationClient import Station
+from typing import OrderedDict
+import source.classesStationClient as stcl
 import source.générateurSA as gen_suite_aleatoire
 import sys
 
-def generer_duree_service(indice_suite_aleatoire):
-    pass
+def determiner_si_client_prioritaire(suite_aleatoire, indice_suite_aleatoire):
+    return suite_aleatoire[indice_suite_aleatoire] == 1
+
+def generer_duree_service(indice_suite_aleatoire, suite_aleatoire):
+    nombre_aleatoire = (suite_aleatoire[indice_suite_aleatoire]+1)*6
+    return stcl.switch[nombre_aleatoire] # piti trick pour un switch
 
 def generer_arrivee_clients(temps_simulation, suite_aleatoire, indice_suite_aleatoire, tab_poisson, m):
     clients = []
@@ -12,10 +17,25 @@ def generer_arrivee_clients(temps_simulation, suite_aleatoire, indice_suite_alea
         nb_clients = 0
     else:
         for i_poisson in range(1, len(tab_poisson)):
-            if(proba_poisson <= tab_poisson[i_poisson] and proba_poisson > tab_poisson[i_poisson -1]):
+            if(proba_poisson <= tab_poisson[i_poisson] and proba_poisson > tab_poisson[i_poisson - 1]):
                 nb_clients = i_poisson
     for i in range(nb_clients): # TODO il est possible que nb_clients n'existe pas
-        est_prioritaire = generer_duree_service(indice_suite_aleatoire)
+        duree_service = generer_duree_service(indice_suite_aleatoire, suite_aleatoire)
+        if(duree_service == 1):
+            classe = "express"
+        else:
+            est_prioritaire = determiner_si_client_prioritaire(suite_aleatoire, indice_suite_aleatoire)
+            if(est_prioritaire):
+                classe = "prioritaire"
+            else:
+                classe = "ordinaire"
+        if(suite_aleatoire[indice_suite_aleatoire+1]):
+            indice_suite_aleatoire += 1
+        else:
+            indice_suite_aleatoire = 0
+        clients.append(stcl.Client(classe, duree_service))
+    return clients
+
 
 def gestion_file_attente():
     tab_poisson = [24,18,10,3,3,2]
@@ -39,10 +59,11 @@ def gestion_file_attente():
         min_ordinaire = 0
         min_prioritaire = 0
         for i in range(nb_stations_ordinaires + 1): # pas en +2 : correction de Mme Derwa
-            stations.append(Station([], 0, 0))
+            stations.append(stcl.Station([], 0, 0))
 
         while(temps_simulation <= temps_simulation_max):
-
+            # TODO a partir d'ici, suite_aleatoire descend chaque fonction en paramètre
+            #il faudra utiliser le generateur avec l'indice plutôt, comme mis dans les corr de Mme Derwa
             clients = generer_arrivee_clients(temps_simulation, suite_aleatoire, indice_suite_aleatoire, tab_poisson, m)
             
 

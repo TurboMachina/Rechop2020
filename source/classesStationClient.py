@@ -26,3 +26,21 @@ class Client:
     @property
     def duree_service(self):
         return self._duree_service
+
+
+
+class Switch(dict):
+    def __getitem__(self, item):
+        for key in self.keys():
+            if item in key:
+                return super().__getitem__(key)
+        raise KeyError(item)    
+
+switch = Switch({
+    range(0, 24): 1,
+    range(25, 42): 2,
+    range(43, 52): 3,
+    range(53, 55): 4,
+    range(56, 58): 5,
+    range(59, 60): 6
+})
