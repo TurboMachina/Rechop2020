@@ -10,12 +10,7 @@ from source.classeSaut import Saut
 import scipy.stats as sc
 
 def hull_dobbel_periode(x0, a, c, m):
-    if(c < m):
-        lower = c # useless ?
-        bigger = m
-    else:
-        lower = m
-        bigger = c
+    bigger = m if c < m else c
     half_of_bigger = bigger // 2
     for i in range(half_of_bigger + 1):
         if(c % i == 0 and m % i == 0):
