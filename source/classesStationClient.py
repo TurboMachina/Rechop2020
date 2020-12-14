@@ -15,6 +15,7 @@ class Station:
         return self._min_inoccupees
 
 
+
 class Client:
     def __init__(self, classe, duree_service):
         self._classe = classe
