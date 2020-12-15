@@ -166,13 +166,15 @@ def test_des_sauts(suite_aleatoire, valeur_test_saut, m):
     
     #etape 6
     if deb_reg_rejet < X_obs :
-        postRegroup.write(last_line+5, 0, "rejet hypothese nulle, la suite n'est pas acceptable au test des courses")
+        postRegroup.write(last_line+5, 0, "Rejet de H0, la suite n'est pas acceptable au test des courses")
+        wb.save("adm_" + str(valeur_test_saut) + ".xls")
         return False
     else :
-        postRegroup.write(last_line+5, 0, "non rejet hypothese nulle, la suite est acceptable au test des courses")
+        postRegroup.write(last_line+5, 0, "Non rejet de H0, la suite est acceptable au test des courses")
+        wb.save("adm_" + str(valeur_test_saut) + ".xls")
         return True
     
-    wb.save("adm_" + str(valeur_test_saut) + ".xls")
+
     
 def main():
     x0 = 5
@@ -184,9 +186,9 @@ def main():
         print("Paramètres incorrects")
         return None
     else:
-        print("Paramètres validés par Théoréme de Hull-Dobell\n=========\n=========\n=========")
+        print("Paramètres x0:"+str(x0)+" a:"+ str(a)+" c:"+ str(c) +" m:"+ str(m) + " validés par Théoréme de Hull-Dobell\n=========\n=========\n=========")
         suite_aleatoire = GenerateurSA(x0, a, c, m)
-        for valeur_test_saut in range(0,9):
+        for valeur_test_saut in range(0,10):
             suite_aleatoire.reset()
             tabTest.append(True) if (test_des_sauts(suite_aleatoire, valeur_test_saut, m)) else tabTest.append(False)
             print("Le test des sauts est réussi pour la valeur " +  str(valeur_test_saut)) if all(tabTest) else print("Le test des sauts à échouer pour la valeur " + str(valeur_test_saut))
@@ -199,3 +201,6 @@ def main():
                     tabFalse.append(i)
             print("Le test des sauts à échoue pour les valeurs : " + str(tabFalse))
     return x0, a, c, m
+
+
+main()
