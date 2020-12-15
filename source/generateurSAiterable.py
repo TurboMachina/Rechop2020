@@ -6,13 +6,19 @@ class GenerateurSA:
         self._a = a
         self._c = c
         self._m = m
-
+        self._count = 0
+        
     def __iter__(self):
         return self
 
     def __next__(self):
-        self._xn = (self._a * self._xn + self._c) % self._m
-        return self._xn
+        if self._count <= self._m :
+            self._xn = (self._a * self._xn + self._c) % self._m
+            self._count += 1
+            return self._xn
+        else:
+            return -1
 
     def reset(self):
         self._xn = self._x0
+        self._count = 0
