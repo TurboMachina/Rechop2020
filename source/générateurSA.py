@@ -1,7 +1,3 @@
-# TODO : relecture
-#       optimisation en fonctionnel
-#       khi carré
-
 # correction Mme Derwa : avancer Pas à pas dans la recu et pas tout stocker en mémoire
 # -> Prendre un paramètre indice supplémentaire
 
@@ -199,7 +195,7 @@ def main():
             for i in range(0,len(tabTest)):
                 if not tabTest[i] :
                     tabFalse.append(i)
-            print("Le test des sauts à échoue pour les valeurs : " + str(tabFalse))
+            print("=========\n=========\n=========\nLe test des sauts à échoue pour les valeurs : " + str(tabFalse))
     return x0, a, c, m
 
 
