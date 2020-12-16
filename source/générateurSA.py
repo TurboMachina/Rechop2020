@@ -8,7 +8,6 @@ from xlwt import Workbook
 from scipy import stats
 from functools import reduce
 import math
-import xlwt
 
 
 
@@ -172,15 +171,11 @@ def test_des_sauts(suite_aleatoire, valeur_test_saut, m):
     
 
     
-def main():
-    x0 = 5
-    a  = 61
-    c = 7
-    m = 600
+def main(x0,a,c,m):
     tabTest = []
     if(not Hull_Dobell(x0, a, c, m)):
         print("Paramètres incorrects")
-        return None
+        return False
     else:
         print("Paramètres x0:"+str(x0)+" a:"+ str(a)+" c:"+ str(c) +" m:"+ str(m) + " validés par Théoréme de Hull-Dobell\n=========\n=========\n=========")
         suite_aleatoire = GenerateurSA(x0, a, c, m)
@@ -196,7 +191,4 @@ def main():
                 if not tabTest[i] :
                     tabFalse.append(i)
             print("=========\n=========\n=========\nLe test des sauts à échoue pour les valeurs : " + str(tabFalse))
-    return x0, a, c, m
-
-
-main()
+    return all(tabTest)
