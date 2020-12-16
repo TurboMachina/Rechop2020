@@ -1,12 +1,12 @@
 class Station:
-    def __init__(self, clients, min_occupees, min_inoccupees):
-        self._clients = clients
+    def __init__(self, client, min_occupees, min_inoccupees):
+        self._client = client
         self._min_occupees = min_occupees
         self._min_inoccupees = min_inoccupees
 
     @property
-    def clients(self):
-        return self._clients
+    def client(self):
+        return self._client
     @property
     def min_occupees(self):
         return self._min_occupees
@@ -27,21 +27,3 @@ class Client:
     @property
     def duree_service(self):
         return self._duree_service
-
-
-
-class Switch(dict):
-    def __getitem__(self, item):
-        for key in self.keys():
-            if item in key:
-                return super().__getitem__(key)
-        raise KeyError(item)    
-
-switch = Switch({
-    range(0, 24): 1,
-    range(25, 42): 2,
-    range(43, 52): 3,
-    range(53, 55): 4,
-    range(56, 58): 5,
-    range(59, 60): 6
-})
