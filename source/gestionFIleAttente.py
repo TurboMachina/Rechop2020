@@ -2,7 +2,6 @@ from typing import OrderedDict
 import classesStationClient as stcl
 import générateurSA as gen_suite_aleatoire
 from generateurSAiterable import GenerateurSA
-from xlwt import Workbook
 import sys
 import math
      
@@ -313,19 +312,15 @@ def gestion_file_attente(suite, rapport, rapport_couts):
     print("Le nombre de station optimal est : " + str(nb_stations_optimal))
 
 if __name__ == "__main__":
-    x0 = 5
-    a = 61
-    c = 7
-    m = 600
-    #x0 = int(input("x0 ?"))
-    #a = int(input("a ?"))
-    #c = int(input("c ?"))
-    #m = int(input ("m ?"))
-    #while not gen_suite_aleatoire.main(x0,a,c,m):
-    #    x0 = int(input("x0 ?"))
-    #    a = int(input("a ?"))
-    #    c = int(input("c ?"))
-    #    m = int(input ("m ?"))
+    x0 = int(input("x0 ?"))
+    a = int(input("a ?"))
+    c = int(input("c ?"))
+    m = int(input ("m ?"))
+    while not gen_suite_aleatoire.main(x0,a,c,m):
+        x0 = int(input("x0 ?"))
+        a = int(input("a ?"))
+        c = int(input("c ?"))
+        m = int(input ("m ?"))
     suite = GenerateurSA(x0,a,c,m)
     wb = Workbook()
     rapport = open("rapport_simulation.txt", "w")
