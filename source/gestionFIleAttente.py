@@ -25,7 +25,7 @@ def generer_duree_service(suite, tab_expo_neg):
         if pre <= nombre_aleatoire <= post:
             return (i+1)
 
-def generer_arrivee_clients(temps_simulation, suite, tab_proba_poisson,tab_expo_neg):
+def generer_arrivee_clients(suite, tab_proba_poisson,tab_expo_neg):
     clients = []
     proba_poisson = generer_Un(suite)
     nb_clients = 0
@@ -36,7 +36,7 @@ def generer_arrivee_clients(temps_simulation, suite, tab_proba_poisson,tab_expo_
     if proba_poisson > 0.999 :
         nb_clients = 8
     if(nb_clients>0):
-        for i in range(nb_clients): # TODO il est possible que nb_clients n'existe pas
+        for i in range(nb_clients):
             duree_service = generer_duree_service(suite,tab_expo_neg)
             if(duree_service == 1):
                 classe = "express"
