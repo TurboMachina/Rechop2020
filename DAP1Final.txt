@@ -12,7 +12,7 @@ if(NOT HullDobbelPeriode(x0, a, c, m))
   return
 endif
 suiteAleatoire = genererSuiteAleatoire(x0, a, c, m)
-if(testDesSauts(suiteAleatoire, valeurTestSaut))
+if(testDesSauts(suiteAleatoire, valeurTestSaut, m))
   sortir "test des sauts failed"
   return
 endif
@@ -32,17 +32,21 @@ return suiteAleatoire
 ------
 
 // renvoie true si le test confirme que la suite est ok
----* testDesSauts (suiteAleatoire, valeurTestSaut )
+---* testDesSauts (suiteAleatoire, valeurTestSaut, m )
 niveauIncertitude = 0.05
 // l'attribut "length" donne le nombre d'éléments dans le tableau
 n = suiteAleatoire.length
-
+iSuite = 0
+suiteYn = []
+do while (iSuite < n)
+  suiteYn[iSuite] = ((suiteAleatoire[iSuite] / m) * 10).ENT
+enddo
 // initialisation du tableau du test des sauts
 
-// saut : Xi
-// sautGroupé : cas ou on groupe Xi entre eux (palier du haut) (facultatif)
+// saut : taille du saut (Xi)
 // pi: probabilité d'avoir un saut de taille "saut"
 // ri: nombre de répétitions observées
+// npi: n * pi
 testDesSauts: []
 i = 0
 do while (i < n - 2)
@@ -57,13 +61,13 @@ enddo
 
 // parcours de la suite aléatoire et remplissage des ri
 indexVal = 0
-do while(suiteAleatoire[indexVal] != valeurTestSaut && indexVal < n)
+do while(suiteYn[indexVal] != valeurTestSaut && indexVal < n)
   indexVal++
 enddo
 i = indexVal + 1
 saut = 0
 do while (i < n)
-  if(suiteAleatoire[i] != valeurTestSaut)
+  if(suiteYn[i] != valeurTestSaut)
     saut++
   else
     testDesSauts[saut].ri++

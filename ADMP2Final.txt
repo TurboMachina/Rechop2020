@@ -1,13 +1,27 @@
+// annexe word contient :
+calcul du nombre min et max de stations
+
 // variables globales :
 suiteAléatoire : suite générée via le DA partie 1
 loiDuréeService: tableau donné dans les consignes partie 2
+tabPoisson = tableau des probabilités cumulées (cf annexe word point 2)
+les paramètres x0, a, c, m de la partie 1 sont également disponibles dans ce DA
+
+// structures utilisées :
+stations: liste des stations. Les deux premiers éléments sont toujours les stations express
+clients : liste des clients qui arrivent toutes les minutes. Chaque élément de la liste
+          contient un objet qui décrit le client avec les informations :
+          - classe : classe du client ("express", "ordinaire" ou "prioritaire")
+          - duréeService: nombre qui donne la durée de service restant pour le client
 
 ---* gestionFileAttente
 coutOptimal = BIG_FLOAT
 nbStationsOptimal = 1
 tempsSimulationMax = 600
-nbStationsOrdinairesMax = 500
-nbStationsOrdinaires = 1
+// nbStationsOrdinairesMax = durée de service max * nombre max de clients par minutes
+nbStationsOrdinairesMax = 48
+// 5 = nombre minimal de stations = moyenne arrivée * temps moyen passé en file (4.3 arrondi à 5)
+nbStationsOrdinaires = 5
 tailleMaxFileExpress = 10
 indiceSuiteAléatoire = 0
 
@@ -64,7 +78,18 @@ enddo
 
 ---* générerArrivéeClients(tempsSimulation)
 clients = []
-nbClients = (e^-2 * 2^tempsSimulation)  / (tempsSimulation!)
+probaPoisson = suiteAleatoire[tempsSimulation] / m
+if(probaPoisson <= tabPoisson[0])
+nbClients = 0
+else
+iPoisson = 1
+do while (iPoisson < tabPoisson.length)
+if(probaPoisson <= tabPoisson[iPoisson] && probaPoisson > tabPoisson[iPoisson - 1])
+ nbClients = iPoisson
+endif
+iPoisson++
+enddo
+endif
 i = 0
 // création d'objets qui décrivent les clients
 do while (i < nbClients)
