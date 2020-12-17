@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.xls
+
+rapport_couts.txt
+rapport_simulation.txt

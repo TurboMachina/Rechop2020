@@ -129,7 +129,8 @@ def test_des_sauts(suite_aleatoire, valeur_test_saut, m):
                 tabSauts[i-1]._saut = (tabSauts[i-1].saut,post)
             del tabSauts[i]
     
-    #ecriture des résultat post-regroupement
+    #ecriture des résultat pré-regroupement
+    i = 0
     for i in range(0, len(tabSauts)):
         if(type(tabSauts[i].saut) == int):
             postRegroup.write(i+1,0, tabSauts[i].saut)

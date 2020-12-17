@@ -1,4 +1,3 @@
-from typing import OrderedDict
 import classesStationClient as stcl
 import générateurSA as gen_suite_aleatoire
 from generateurSAiterable import GenerateurSA
@@ -29,6 +28,7 @@ def generer_duree_service(suite, tab_expo_neg):
 def generer_arrivee_clients(temps_simulation, suite, tab_proba_poisson,tab_expo_neg):
     clients = []
     proba_poisson = generer_Un(suite)
+    nb_clients = 0
     for i in range(0,len(tab_proba_poisson)):
         pre,post = tab_proba_poisson[i]
         if pre < proba_poisson <= post:
@@ -162,10 +162,8 @@ def gestion_file_attente(suite, rapport, rapport_couts):
     nb_stations_optimal = 1
     temps_simulation_max = 600
     nb_stations_max = 50
-    nb_stations = 5
+    nb_stations = 7
     taille_max_file_express = 10
-    r = 0
-    r_couts = 0
 
     while(nb_stations <= nb_stations_max):
         suite.reset()
@@ -190,7 +188,7 @@ def gestion_file_attente(suite, rapport, rapport_couts):
             # Gérer arrivées clients
             for i in range(len(clients)):
                 if(clients[i].classe == "express"):
-                    if(len(file_express) < 10):
+                    if(len(file_express) < taille_max_file_express):
                         file_express.append(clients[i])
                     else:
                         clients[i]._classe = "ordinaire"
@@ -208,6 +206,7 @@ def gestion_file_attente(suite, rapport, rapport_couts):
                     if(stations[i_station].client is None) :
                         stations[i_station]._client = clients[i]
                     else:  
+                        i_ejecte = 0
                         #Chercher client avec max temps de traitement
                         max_temps = 0
                         for i_station in range (2, len(stations)):
@@ -322,7 +321,6 @@ if __name__ == "__main__":
         c = int(input("c ?"))
         m = int(input ("m ?"))
     suite = GenerateurSA(x0,a,c,m)
-    wb = Workbook()
     rapport = open("rapport_simulation.txt", "w")
     rapport_couts = open("rapport_couts.txt", "w")
     gestion_file_attente(suite, rapport, rapport_couts)
