@@ -180,7 +180,7 @@ def gestion_file_attente(suite, rapport, rapport_couts):
             stations.append(stcl.Station(None, 0, 0))
 
         while(temps_simulation <= temps_simulation_max):
-            clients = generer_arrivee_clients(temps_simulation, suite, tab_proba_poisson,tab_expo_neg)
+            clients = generer_arrivee_clients(suite, tab_proba_poisson,tab_expo_neg)
             nb_declasses_current = 0
             nb_ejectes_current = 0
             generer_rapport_pre(rapport, nb_stations, temps_simulation, stations, file_ordinaire, file_express, clients)
@@ -315,12 +315,13 @@ if __name__ == "__main__":
     a = int(input("a ?"))
     c = int(input("c ?"))
     m = int(input ("m ?"))
-    while not gen_suite_aleatoire.main(x0,a,c,m):
-        x0 = int(input("x0 ?"))
-        a = int(input("a ?"))
-        c = int(input("c ?"))
-        m = int(input ("m ?"))
+    # while not gen_suite_aleatoire.main(x0,a,c,m):
+    #     x0 = int(input("x0 ?"))
+    #     a = int(input("a ?"))
+    #     c = int(input("c ?"))
+    #     m = int(input ("m ?"))
     suite = GenerateurSA(x0,a,c,m)
+    gen_suite_aleatoire.main(x0,a,c,m)
     rapport = open("rapport_simulation.txt", "w")
     rapport_couts = open("rapport_couts.txt", "w")
     gestion_file_attente(suite, rapport, rapport_couts)

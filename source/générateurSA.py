@@ -183,7 +183,7 @@ def main(x0,a,c,m):
         for valeur_test_saut in range(0,10):
             suite_aleatoire.reset()
             tabTest.append(True) if (test_des_sauts(suite_aleatoire, valeur_test_saut, m)) else tabTest.append(False)
-            print("Le test des sauts est réussi pour la valeur " +  str(valeur_test_saut)) if all(tabTest) else print("Le test des sauts à échouer pour la valeur " + str(valeur_test_saut))
+            print("Le test des sauts est réussi pour la valeur " +  str(valeur_test_saut)) if (tabTest[valeur_test_saut]) else print("Le test des sauts à échouer pour la valeur " + str(valeur_test_saut))
         if all(tabTest):
             print("=========\n=========\n=========\nLe test des sauts est réussi pour toutes les valeurs")
         else :
