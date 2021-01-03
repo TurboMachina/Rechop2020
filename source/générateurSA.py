@@ -29,7 +29,7 @@ estPremier = lambda x : not any ([x % i == 0 for i in range(2,x)])
 def fact_premier_m(m,a):
     for p in range(2,int(m/2)):
         if estPremier(p) and m%p == 0 :
-            if(p%(a*(a-1)) == 0):
+            if(p%((a-1)) == 0):
                 return False
     return True
 
