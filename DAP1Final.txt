@@ -160,7 +160,7 @@ enddo
 p = 2
 do while (p <= [m/2].ENT)
   if(estPremier(p) && m % p == 0)
-    if (p % (a * (a - 1) != 0)
+    if (p % ((a - 1) != 0)
       return false
     endif
   endif
