@@ -2,31 +2,40 @@
 calcul du nombre min et max de stations
 
 // variables globales :
-suiteAléatoire : suite générée via le DA partie 1
 loiDuréeService: tableau donné dans les consignes partie 2
 tabPoisson = tableau des probabilités cumulées (cf annexe word point 2)
 les paramètres x0, a, c, m de la partie 1 sont également disponibles dans ce DA
 
 // structures utilisées :
-stations: liste des stations. Les deux premiers éléments sont toujours les stations express
-clients : liste des clients qui arrivent toutes les minutes. Chaque élément de la liste
+stations: tableu des stations. Les deux premiers éléments sont toujours les stations express.
+ Chaque station contient :
+    - client : objet qui représente le client entrain d'être traité
+    - minOccupées : temps d'occupation total sur la station
+    - minInoccupées : temps d'inoccupation total sur la station
+clients : tableau des clients qui arrivent toutes les minutes. Chaque élément
           contient un objet qui décrit le client avec les informations :
           - classe : classe du client ("express", "ordinaire" ou "prioritaire")
           - duréeService: nombre qui donne la durée de service restant pour le client
+fileExpress : tableau qui contient les clients qui attendent dans la file express. La taille
+  maximale de ce tableau est de 10
+fileOrdinaire : tableau qui contient les clients qui attendent dans la file ordinaire.
+L'ordre des clients dans les files correspond à l'ordre de leur position dans la file
 
 ---* gestionFileAttente
 coutOptimal = BIG_FLOAT
 nbStationsOptimal = 1
 tempsSimulationMax = 600
-// nbStationsOrdinairesMax = durée de service max * nombre max de clients par minutes
-nbStationsOrdinairesMax = 48
+// nbStationsMax = durée de service max * nombre max de clients par minutes
+nbStationsMax = 48
 // 5 = nombre minimal de stations = moyenne arrivée * temps moyen passé en file (4.3 arrondi à 5)
-nbStationsOrdinaires = 5
+nbStations = 5
 tailleMaxFileExpress = 10
-indiceSuiteAléatoire = 0
 
-// boucle pour tester avec différents nombres de stations
-do while (nbStationsOrdinaires <= nbStationsOrdinairesMax)
+// boucle sur laquelle on fait varier le nombre de stations ordinaires
+// -- le nombre de stations express est toujours égal à 2
+do while (nbStations <= nbStationsMax)
+  // x0 premier nombre utilisé dans la génération de la suite aléatoire
+  xn = x0
   tempsSimulation = 0
   fileExpress = []
   fileOrdinaire = []
@@ -38,7 +47,7 @@ do while (nbStationsOrdinaires <= nbStationsOrdinairesMax)
   minOrdinaire = 0
   minPrioritaire = 0
   i = 0
-  do while (i < nbStationsOrdinaires + 2)
+  do while (i < nbStations)
     stations[i] = {
       client: null,
       minOccupées: 0
@@ -50,18 +59,29 @@ do while (nbStationsOrdinaires <= nbStationsOrdinairesMax)
   // boucle sur le temps de simulation
   do while (tempsSimulation <= tempsSimulationMax)
     // générer arrivée clients
-    module(générerArrivéeClients;tempsSimulation; clients)
+    // cette méthode modifie le tableau "client" par référence
+    module(générerArrivéeClients;tempsSimulation, clients;)
     // gérer arrivées clients
-    paragraphe(GérerArrivéesClients)
+    // en python les tableau sont modifiés par référence, il n'est donc pas nécessaire
+    // d'afficher le retour de la méthode (cette méthode modifie les files et le tableau des stations)
+    module(GérerArrivéesClients;stations, clients, fileExpress, fileOrdinaire;)
     // gestion traitements express
     paragraphe(GererExpress)
     // gestion traitements ordinaires
     paragraphe(GererOrdinaire)
     // décrémenter durée service à toutes les stations occupées
     iStation = 0
-    do while (i < nbStationsOrdinaires + 2)
+    do while (i < nbStations)
       if(stations[iStation].client != null)
         stations[iStation].client.duréeService--
+        stations[iStation].minOccupées++
+        if(stations[iStation].client.classe == "ordinaire")
+          minOrdinaire ++
+        else
+          minPrioritaire ++
+        endif
+      else
+        stations[iStation].minInoccupées++
       endif
     enddo
     tempsSimulation++
@@ -70,34 +90,32 @@ do while (nbStationsOrdinaires <= nbStationsOrdinairesMax)
   paragraphe(CalculCouts)
   if(coutTotal < coutOptimal)
     coutOptimal = coutTotal
-    nbStationsOptimal = nbStationsOrdinaires + 2
+    nbStationsOptimal = nbStations
   endif
-  nbStationsOrdinaires++
+  nbStations++
 enddo
 ------
 
 ---* générerArrivéeClients(tempsSimulation)
 clients = []
-probaPoisson = suiteAleatoire[tempsSimulation] / m
-if(probaPoisson <= tabPoisson[0])
-nbClients = 0
-else
-iPoisson = 1
-do while (iPoisson < tabPoisson.length)
-if(probaPoisson <= tabPoisson[iPoisson] && probaPoisson > tabPoisson[iPoisson - 1])
- nbClients = iPoisson
+probaPoisson = générerNombreAléatoire(xn) / m
+iPoisson = 0
+classeTrouvée = false
+do while (!classeTrouvée)
+if(probaPoisson <= tabPoisson[i])
+  nbClients = iPoisson
+  classeTrouvée = true
 endif
 iPoisson++
 enddo
-endif
 i = 0
 // création d'objets qui décrivent les clients
 do while (i < nbClients)
-  module(générerDuréeService;indiceSuiteAléatoire;duréeService)
+  module(générerDuréeService;xn;duréeService)
   if(duréeService == 1)
     classe = "express"
   else
-    module(déterminerSiClientPrioritaire;indiceSuiteAléatoire;estPrioritaire)
+    module(déterminerSiClientPrioritaire;xn;estPrioritaire)
     if(estPrioritaire)
       classe = "prioritaire"
     else
@@ -105,41 +123,46 @@ do while (i < nbClients)
     endif
   endif
 
-  if(suiteAleatoire[indiceSuiteAléatoire+1] != null)
-    indiceSuiteAléatoire++
-  else
-    indiceSuiteAléatoire = 0
-  endif
   clients.push({
     classe: classe
     duréeService: duréeService
   })
 enddo
-return clients
+  return clients
 ------
 
----* déterminerSiClientPrioritaire(indiceSuiteAléatoire)
-return suiteAléatoire[indiceSuiteAléatoire] == 1
+---* déterminerSiClientPrioritaire(xn)
+// le chiffre 1 a été choisi au hasard
+// pour qu'un dixième des clients soit prioritaire
+xn = générerNombreAléatoire(xn)
+nombreAléatoire = ((xn / m) * 10).ENT
+return nombreAléatoire == 1
 ------
 
----* générerDuréeService(indiceSuiteAléatoire)
-nombreAléatoire = (suiteAleatoire[indiceSuiteAléatoire] + 1) * 6
+---* générerDuréeService(xn)
+xn = générerNombreAléatoire(xn)
+nombreAléatoire = (((xn / m) * 10).ENT + 1) * 6
 if (nombreAléatoire <= 24)
  return 1
-endif
-if (nombreAléatoire > 24 && nombreAléatoire <= 42)
+else
+if (nombreAléatoire <= 42)
   return 2
-endif
-if (nombreAléatoire > 42 && nombreAléatoire <= 52)
+else
+if (nombreAléatoire <= 52)
   return 3
-endif
-if (nombreAléatoire > 52 && nombreAléatoire <= 55)
+else
+if (nombreAléatoire <= 55)
   return 4
-endif
-if (nombreAléatoire > 55 && nombreAléatoire <= 58)
+else
+if (nombreAléatoire <= 58)
   return 5
-endif
+else
 return 6
+endif
+endif
+endif
+endif
+endif
 ------
 
 ---* GérerArrivéesClients
@@ -164,7 +187,7 @@ if (clients[i].classe == "prioritaire")
     iStation ++
   enddo
   // une station est libre
-  if(iStation < stations.length || stations[iStation].client == null)
+  if(iStation < stations.length)
     stations[iStation].client = clients[i]
     // toutes les stations sont occupées
     else
@@ -173,7 +196,7 @@ if (clients[i].classe == "prioritaire")
       iMaxDurée = 2
       maxDurée = 0
       do while (iStation < stations.length)
-        if(stations[iStation].client.duréeService < duréeMax && stations[iStation].client.classe != "prioritaire")
+        if(stations[iStation].client.duréeService > maxDurée && stations[iStation].client.classe != "prioritaire")
           maxDurée = stations[iStation].client.duréeService
           iMaxDurée = iStation
         endif
@@ -199,7 +222,10 @@ enddo
 iStation = 0
 do while (iStation < 2)
   if(stations[iStation].client == null)
-    stations[iStation].minInoccupées++
+    if(fileExpress.length > 0)
+      stations[iStation].client = fileExpress[0]
+      fileExpress.pop(0)
+    endif
   else
     if(stations[iStation].client.duréeService == 0 && fileExpress.length > 0)
       stations[iStation].client = fileExpress[0]
@@ -209,9 +235,6 @@ do while (iStation < 2)
     endif
     if(stations[iStation].client.duréeService == 0 && fileExpress.length == 0)
       stations[iStation].client = null
-    endif
-    if(stations[iStation].client.duréeService > 0)
-      stations[iStation].minOccupées++
     endif
   endif
   iStation++
@@ -223,23 +246,18 @@ minExpress += fileExpress.length
 iStation = 2
 do while (iStation < stations.length)
   if(stations[iStation].client == null)
-    stations[iStation].minInoccupées++
+    if(fileOrdinaire.length > 0)
+      stations[iStation].client = fileOrdinaire[0]
+      fileOrdinaire.pop(0)
+    endif
   else
     if(stations[iStation].client.duréeService == 0 && fileOrdinaire.length > 0)
       stations[iStation].client = fileOrdinaire[0]
-      if(stations[iStation].client.classe == "ordinaire")
-        minOrdinaire += fileOrdinaire[0].duréeService
-      else
-        minPrioritaire += fileOrdinaire[0].duréeService
-      endif
       // enlever le premier element de la file
       fileOrdinaire.pop(0)
     endif
     if(stations[iStation].client.duréeService == 0 && fileOrdinaire.length == 0)
       stations[iStation].client = null
-    endif
-    if(stations[iStation].client.duréeService > 0)
-      stations[iStation].minOccupées++
     endif
   endif
   iStation++
@@ -262,16 +280,20 @@ coutsPrioritaire = (minPrioritaire / 60) * 45
 iStation = 0
 do while (iStation < stations.length)
 if(iStation == 0 || iStation == 1)
-  coutsExpress += stations[iStation].minOccupées * 32
+  coutsExpress += stations[iStation].minOccupées / 60 * 32
 else
-  coutsOrdinaires += stations[iStation].minOccupées * 30
+  coutsOrdinaires += stations[iStation].minOccupées / 60 * 30
 endif
-coutsInoccupation = stations[iStation].minInoccupées * 18
+coutsInoccupation = stations[iStation].minInoccupées / 60 * 18
 iStation++
 enddo
 
 coutTotal = coutsExpress + coutsOrdinaire + coutsPrioritaire + coutsInoccupation
             + nbDéclassés * 15 + nbEjectés * 20
+------
+
+---* générerNombreAléatoire(xn)
+return (a * Xn + c) % m
 ------
 
 ///////////////////////////////////////////////////////////////////////////////
